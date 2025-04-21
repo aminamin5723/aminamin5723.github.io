@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Feedback System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    h1, h2, h3 {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    button, select, input, textarea {
+      font-size: 1em;
+    }
+    button {
+      cursor: pointer;
+      padding: 6px 12px;
+      margin: 4px 2px;
+    }
+    input, select, textarea {
+      padding: 4px;
+      margin: 4px 0;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+    .status-icon {
+      font-weight: bold;
+    }
+    .status-icon.ok {
+      color: green;
+    }
+    .status-icon.missing {
+      color: red;
+    }
+    .collapsible-section {
+      margin-bottom: 10px;
+    }
+    .collapsible-section .toggle {
+      width: 100%;
+      text-align: left;
+      background: #eee;
+      border: none;
+      outline: none;
+      font-size: 1.1em;
+      padding: 10px;
+      border-radius: 3px;
+      display: block;
+    }
+    .collapsible-section .toggle.active {
+      background: #ccc;
+    }
+    .collapsible-content {
+      display: none;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+    .collapsible-content.active {
+      display: block;
+    }
+    .form-builder {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 3px;
+    }
+    .question-item {
+      border: 1px dashed #aaa;
+      padding: 5px;
+      margin: 5px 0;
+      border-radius: 3px;
+      background: #fcfcfc;
+    }
+    .question-item .remove-btn {
+      float: right;
+      cursor: pointer;
+      color: red;
+    }
+    .question-item .remove-btn:hover {
+      text-decoration: underline;
+    }
+    .question-text {
+      display: inline-block;
+    }
+    .star-rating {
+      display: inline-flex;
+      flex-direction: row-reverse;
+      font-size: 1.2em;
+    }
+    .star-rating input {
+      display: none;
+    }
+    .star-rating label {
+      color: #ccc;
+      cursor: pointer;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+      color: gold;
+    }
+    .star-rating input:checked ~ label {
+      color: gold;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Feedback Portal</h1>
+    <!-- Login Section -->
+    <div id="login-section">
+      <h2>Login</h2>
+      <button id="admin-login-btn">Admin Login</button>
+      <button id="student-login-btn">Student Login</button>
+      <div id="admin-login-form" class="hidden">
+        <h3>Admin Login</h3>
+        <input type="password" id="admin-password-input" placeholder="Password" />
+        <button id="admin-login-submit">Login</button>
+        <p id="admin-login-error" style="color:red; display:none;">Incorrect password, try again.</p>
+      </div>
+      <div id="student-login-form" class="hidden">
+        <h3>Student Login</h3>
+        <label for="student-name-select">Select Your Name:</label>
+        <select id="student-name-select">
+          <option value="">-- Select Name --</option>
+          <!-- Student options will be populated by JS -->
+        </select>
+        <button id="student-login-submit">Login</button>
+      </div>
+    </div>
+       <!-- Admin Interface -->
+    <div id="admin-interface" class="hidden">
+      <h2>Admin Dashboard</h2>
+      <!-- Form Builder Section -->
+      <div class="collapsible-section">
+        <button class="toggle">Create New Form</button>
+        <div class="collapsible-content">
+          <div class="form-builder">
+            <h3>Form Builder</h3>
+            <label>Form Title: <input type="text" id="form-title" /></label><br />
+            <label>Theme Color: <input type="color" id="form-color" value="#2196F3" /></label><br />
+            <label>Expiration Date: <input type="date" id="form-expiration" /></label>
+            <h4>Add Question</h4>
+            <label for="question-type">Type:</label>
+            <select id="question-type">
+              <option value="short">Short Answer</option>
+              <option value="paragraph">Paragraph</option>
+              <option value="multiple">Multiple Choice</option>
+              <option value="star">Star Rating</option>
+              <option value="conditional">Conditional (by Period)</option>
+            </select><br />
+            <label>Question: <input type="text" id="question-text" /></label><br />
+            <div id="options-input" class="hidden">
+              <label>Options (comma separated):<br />
+                <textarea id="question-options" rows="3"></textarea>
+              </label><br />
+            </div>
+            <div id="period-input" class="hidden">
+              <label>Applicable Period(s) (e.g. 1 or 1,2): <input type="text" id="question-periods" /></label><br />
+            </div>
+            <button id="add-question-btn">Add Question</button>
+            <h4>Questions:</h4>
+            <div id="questions-list"></div>
+            <button id="save-draft-btn">Save Draft</button>
+            <button id="preview-form-btn">Preview</button>
+            <button id="publish-form-btn">Publish</button>
+            <p id="form-builder-msg" style="color:green;"></p>
+          </div>
+        </div>
+      </div>
+      <!-- Forms List Section -->
+      <div class="collapsible-section">
+        <button class="toggle">Draft Forms</button>
+        <div class="collapsible-content" id="draft-forms-list">
+          <!-- Draft forms will be listed here -->
+        </div>
+      </div>
+      <div class="collapsible-section">
+        <button class="toggle">Active Forms</button>
+        <div class="collapsible-content" id="active-forms-list">
+          <!-- Active forms will be listed here -->
+        </div>
+      </div>
+      <div class="collapsible-section">
+        <button class="toggle">Past Forms</button>
+        <div class="collapsible-content" id="past-forms-list">
+          <!-- Past forms will be listed here -->
+        </div>
+      </div>
+      <!-- Admin Settings Section -->
+      <div class="collapsible-section">
+        <button class="toggle">Admin Settings</button>
+        <div class="collapsible-content">
+          <h3>Change Password</h3>
+          <label>Current Password: <input type="password" id="current-pass" /></label><br />
+          <label>New Password: <input type="password" id="new-pass" /></label><br />
+          <label>Confirm New Password: <input type="password" id="confirm-pass" /></label><br />
+          <button id="change-pass-btn">Change Password</button>
+          <p id="pass-change-msg" style="color:green;"></p>
+        </div>
+      </div>
+    </div>
+       <!-- Student Interface -->
+    <div id="student-interface" class="hidden">
+      <h2>Available Forms</h2>
+      <div id="student-forms-list">
+        <!-- Active forms for student to choose will be listed here -->
+      </div>
+      <div id="student-form-container" class="hidden">
+        <h3 id="student-form-title"></h3>
+        <div id="student-form-content">
+          <!-- Form questions will be injected here -->
+        </div>
+        <button id="submit-form-btn">Submit</button>
+        <p id="student-form-msg" style="color:green;"></p>
+      </div>
+    </div>
+  </div>
+  <!-- Include jsPDF library for PDF export (placeholder via CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-lHXdKkcHV+XFp8u6R7xydQ3Hcye96WnXMoOUi/wK+aSXRcvTx7pX3X7BjgirYRzmtiMski8KJzbv6UG2vkz8Vw==" crossorigin="anonymous"></script>
+  <script>
+    // Application State and Data
+    const students = [
+      "Melina Schwesinger",
+      "Teigen Gill",
+      "Lia Mazzali",
+      "Rohan Amin",
+      "Rukma Chaudhury",
+      "Reina Chaudhury",
+      "Jacob Chung",
+      "Alex Kim",
+      "Lydia Chung",
+      "Zuri Ruffin",
+      "Mark Hong",
+      "Ethan Jiang",
+      "Brenden Hammond",
+      "Teresa Hacker",
+      "Derrick Spike"
+    ];
+    let forms = JSON.parse(localStorage.getItem('forms') || '[]'); // list of form objects
+    let responses = JSON.parse(localStorage.getItem('responses') || '{}'); // { formId: { studentName: { email: '', answers: [] } } }
+    let adminPassword = localStorage.getItem('adminPass') || 'admin123';
+    let currentForm = null; // form being built or edited by admin (not yet saved)
+    let currentStudentName = null;
+    let currentStudentFormId = null;
+    // Placeholder API keys and credentials
+    const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE";
+    const TWILIO_SID = "YOUR_TWILIO_SID_HERE";
+    const TWILIO_AUTH_TOKEN = "YOUR_TWILIO_AUTH_TOKEN_HERE";
+    const TWILIO_FROM = "YOUR_TWILIO_PHONE_NUMBER_HERE";
+    // Optionally, map student names to phone for reminders (placeholder)
+    const studentContacts = {
+      "Melina Schwesinger": "+15550000001",
+      "Teigen Gill": "+15550000002",
+      "Lia Mazzali": "+15550000003",
+      "Rohan Amin": "+15550000004",
+      "Rukma Chaudhury": "+15550000005",
+      "Reina Chaudhury": "+15550000006",
+      "Jacob Chung": "+15550000007",
+      "Alex Kim": "+15550000008",
+      "Lydia Chung": "+15550000009",
+      "Zuri Ruffin": "+15550000010",
+      "Mark Hong": "+15550000011",
+      "Ethan Jiang": "+15550000012",
+      "Brenden Hammond": "+15550000013",
+      "Teresa Hacker": "+15550000014",
+      "Derrick Spike": "+15550000015"
+    };
+    // Utility: escape HTML to prevent issues in rendering user input
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+    }
+    // Login Handlers
+    const adminLoginBtn = document.getElementById('admin-login-btn');
+    const studentLoginBtn = document.getElementById('student-login-btn');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const studentLoginForm = document.getElementById('student-login-form');
+    const adminLoginSubmit = document.getElementById('admin-login-submit');
+    const studentLoginSubmit = document.getElementById('student-login-submit');
+    const adminPasswordInput = document.getElementById('admin-password-input');
+    const adminLoginError = document.getElementById('admin-login-error');
+    adminLoginBtn.addEventListener('click', () => {
+      adminLoginForm.classList.remove('hidden');
+      studentLoginForm.classList.add('hidden');
+    });
+    studentLoginBtn.addEventListener('click', () => {
+      studentLoginForm.classList.remove('hidden');
+      adminLoginForm.classList.add('hidden');
+    });
+    // Populate student names in select
+    const studentNameSelect = document.getElementById('student-name-select');
+    students.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      studentNameSelect.appendChild(opt);
+    });
+    adminLoginSubmit.addEventListener('click', () => {
+      const enteredPass = adminPasswordInput.value;
+      if (enteredPass === adminPassword) {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('admin-interface').classList.remove('hidden');
+      } else {
+        adminLoginError.style.display = 'block';
+      }
+    });
+    studentLoginSubmit.addEventListener('click', () => {
+      const name = studentNameSelect.value;
+      if (name) {
+        currentStudentName = name;
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('student-interface').classList.remove('hidden');
+        loadStudentFormsList();
+      }
+    });
+    // Collapsible sections toggle logic
+    document.querySelectorAll('.collapsible-section .toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const content = btn.nextElementSibling;
+        const isActive = btn.classList.contains('active');
+        // close if open, open if closed
+        if (isActive) {
+          btn.classList.remove('active');
+          content.classList.remove('active');
+        } else {
+          btn.classList.add('active');
+          content.classList.add('active');
+        }
+      });
+    }); 
+       // Admin: Form Builder Logic
+    const questionTypeSelect = document.getElementById('question-type');
+    const questionTextInput = document.getElementById('question-text');
+    const optionsInputDiv = document.getElementById('options-input');
+    const questionOptionsText = document.getElementById('question-options');
+    const periodInputDiv = document.getElementById('period-input');
+    const questionPeriodsInput = document.getElementById('question-periods');
+    questionTypeSelect.addEventListener('change', () => {
+      const type = questionTypeSelect.value;
+      // Show/hide additional inputs based on question type
+      if (type === 'multiple') {
+        optionsInputDiv.classList.remove('hidden');
+      } else {
+        optionsInputDiv.classList.add('hidden');
+      }
+      if (type === 'conditional') {
+        periodInputDiv.classList.remove('hidden');
+      } else {
+        periodInputDiv.classList.add('hidden');
+      }
+    });
+    // Create new form or editing a draft
+    function initNewForm() {
+      currentForm = {
+        id: Date.now().toString(),
+        title: document.getElementById('form-title').value.trim(),
+        color: document.getElementById('form-color').value,
+        expiration: document.getElementById('form-expiration').value,
+        status: 'draft', // draft, active, or closed
+        questions: []
+      };
+    }
+    // Add question to current form
+    document.getElementById('add-question-btn').addEventListener('click', () => {
+      const qType = questionTypeSelect.value;
+      const qText = questionTextInput.value.trim();
+      if (!qText) return;
+      let question = { type: qType, text: qText };
+      if (qType === 'multiple') {
+        const opts = questionOptionsText.value.split(',').map(o => o.trim()).filter(o => o);
+        question.options = opts;
+      }
+      if (qType === 'star') {
+        question.maxStars = 5; // fixed 5-star rating
+      }
+      if (qType === 'conditional') {
+        let periods = questionPeriodsInput.value;
+        if (periods) {
+          // parse into array of numbers
+          const periodList = periods.split(',').map(p => parseInt(p.trim())).filter(p => !isNaN(p));
+          question.periods = periodList;
+        } else {
+          question.periods = [];
+        }
+        // For conditional, assume short answer type for now
+        question.type = 'conditional';
+      }
+      currentForm.questions.push(question);
+      // clear input fields for next question
+      questionTextInput.value = '';
+      questionOptionsText.value = '';
+      questionPeriodsInput.value = '';
+      optionsInputDiv.classList.add('hidden');
+      periodInputDiv.classList.add('hidden');
+      questionTypeSelect.value = 'short';
+      // update question list display
+      renderQuestionsList();
+    });
+    function renderQuestionsList() {
+      const qListDiv = document.getElementById('questions-list');
+      qListDiv.innerHTML = '';
+      if (!currentForm || currentForm.questions.length === 0) {
+        qListDiv.innerHTML = '<em>No questions added yet.</em>';
+        return;
+      }
+      currentForm.questions.forEach((q, index) => {
+        const qi = document.createElement('div');
+        qi.className = 'question-item';
+        let qInfo = q.text + ' (' + q.type;
+        if (q.type === 'multiple') qInfo += ' with options';
+        if (q.type === 'star') qInfo += ' 1-' + (q.maxStars || 5) + ' stars';
+        if (q.type === 'conditional') qInfo += ' visible for period(s) ' + (q.periods && q.periods.length ? q.periods.join(',') : 'N/A');
+        qInfo += ')';
+        const qtSpan = document.createElement('span');
+        qtSpan.className = 'question-text';
+        qtSpan.textContent = qInfo;
+        const removeBtn = document.createElement('span');
+        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'remove-btn';
+        removeBtn.addEventListener('click', () => {
+          currentForm.questions.splice(index, 1);
+          renderQuestionsList();
+        });
+        qi.appendChild(qtSpan);
+        qi.appendChild(removeBtn);
+        qListDiv.appendChild(qi);
+      });
+    }
+    // Save draft
+    document.getElementById('save-draft-btn').addEventListener('click', () => {
+      if (!currentForm) {
+        initNewForm();
+      } else {
+        // update title, color, expiration from fields as they might have changed
+        currentForm.title = document.getElementById('form-title').value.trim();
+        currentForm.color = document.getElementById('form-color').value;
+        currentForm.expiration = document.getElementById('form-expiration').value;
+      }
+      if (!currentForm.title) {
+        alert('Please provide a form title.');
+        return;
+      }
+      // if form already in forms list (editing existing draft)
+      const existingIndex = forms.findIndex(f => f.id === currentForm.id);
+      if (existingIndex >= 0) {
+        forms[existingIndex] = currentForm;
+      } else {
+        forms.push(currentForm);
+      }
+      localStorage.setItem('forms', JSON.stringify(forms));
+      document.getElementById('form-builder-msg').textContent = 'Draft saved.';
+      setTimeout(() => { document.getElementById('form-builder-msg').textContent = ''; }, 3000);
+      loadFormsLists();
+    });
+    // Publish form
+    document.getElementById('publish-form-btn').addEventListener('click', () => {
+      if (!currentForm) {
+        initNewForm();
+      } else {
+        currentForm.title = document.getElementById('form-title').value.trim();
+        currentForm.color = document.getElementById('form-color').value;
+        currentForm.expiration = document.getElementById('form-expiration').value;
+      }
+      if (!currentForm.title) {
+        alert('Please provide a form title.');
+        return;
+      }
+      if (currentForm.questions.length === 0) {
+        alert('Please add at least one question.');
+        return;
+      }
+      currentForm.status = 'active';
+      // Check expiration date
+      if (currentForm.expiration) {
+        const expDate = new Date(currentForm.expiration);
+        if (expDate < new Date()) {
+          alert('Expiration date is in the past. Please choose a future date.');
+          return;
+        }
+      }
+      const existingIndex = forms.findIndex(f => f.id === currentForm.id);
+      if (existingIndex >= 0) {
+        forms[existingIndex] = currentForm;
+      } else {
+        forms.push(currentForm);
+      }
+      localStorage.setItem('forms', JSON.stringify(forms));
+      document.getElementById('form-builder-msg').textContent = 'Form published!';
+      setTimeout(() => { document.getElementById('form-builder-msg').textContent = ''; }, 3000);
+      // Show shareable link
+      const link = window.location.href.split('?')[0].split('#')[0] + '?form=' + currentForm.id;
+      document.getElementById('form-builder-msg').innerHTML = 'Form published! Share link: <a href="' + link + '">' + link + '</a>';
+      // Reset builder for new form
+      currentForm = null;
+      document.getElementById('form-title').value = '';
+      document.getElementById('form-color').value = '#2196F3';
+      document.getElementById('form-expiration').value = '';
+      document.getElementById('questions-list').innerHTML = '';
+      loadFormsLists();
+    });
+    // Preview form (in builder)
+    document.getElementById('preview-form-btn').addEventListener('click', () => {
+      if (!currentForm) {
+        initNewForm();
+      } else {
+        currentForm.title = document.getElementById('form-title').value.trim();
+      }
+      if (!currentForm.title) {
+        alert('Please provide a form title.');
+        return;
+      }
+      if (currentForm.questions.length === 0) {
+        alert('Please add some questions to preview.');
+        return;
+      }
+      // Render a preview as it would look to student
+      let previewHTML = '<h4>' + escapeHtml(currentForm.title) + ' (Preview)</h4>';
+      previewHTML += '<div>';
+      // name and email fields in preview (if we want to show them)
+      previewHTML += '<p><strong>Name:</strong> [Student Name]</p>';
+      previewHTML += '<p><label><strong>Email:</strong> <input type="email" disabled placeholder="student@example.com"/></label></p>';
+      currentForm.questions.forEach((q, idx) => {
+        previewHTML += '<p><strong>' + escapeHtml(q.text) + '</strong><br/>';
+        if (q.type === 'short') {
+          previewHTML += '<input type="text" disabled /></p>';
+        } else if (q.type === 'paragraph') {
+          previewHTML += '<textarea rows="2" cols="40" disabled></textarea></p>';
+        } else if (q.type === 'multiple') {
+          if (q.options && q.options.length) {
+            q.options.forEach(opt => {
+              previewHTML += '<label><input type="radio" disabled /> ' + escapeHtml(opt) + '</label><br />';
+            });
+          } else {
+            previewHTML += '<em>No options provided.</em>';
+          }
+          previewHTML += '</p>';
+        } else if (q.type === 'star') {
+          // show 5 star inputs disabled
+          previewHTML += '<div class="star-rating">';
+          for (let s = 5; s >= 1; s--) {
+            previewHTML += '<input type="radio" disabled />';
+            previewHTML += '<label>★</label>';
+          }
+          previewHTML += '</div></p>';
+        } else if (q.type === 'conditional') {
+          previewHTML += '<em>Visible only for specified period(s).</em><br />';
+          previewHTML += '<input type="text" disabled /></p>';
+        }
+      });
+      previewHTML += '</div>';
+      alert('Preview form in new window/tab is not implemented. Showing inline preview below.');
+      // For simplicity, just show inline in builder message
+      document.getElementById('form-builder-msg').innerHTML = previewHTML;
+    });
+       // Load forms list (draft/active/past)
+    function loadFormsLists() {
+      const draftListDiv = document.getElementById('draft-forms-list');
+      const activeListDiv = document.getElementById('active-forms-list');
+      const pastListDiv = document.getElementById('past-forms-list');
+      draftListDiv.innerHTML = '';
+      activeListDiv.innerHTML = '';
+      pastListDiv.innerHTML = '';
+      const now = new Date();
+      forms.forEach(form => {
+        let listDiv;
+        if (form.status === 'active') {
+          // check if expired
+          if (form.expiration && new Date(form.expiration) < now) {
+            form.status = 'closed';
+            listDiv = pastListDiv;
+          } else {
+            listDiv = activeListDiv;
+          }
+        }
+        if (form.status === 'draft') {
+          listDiv = draftListDiv;
+        }
+        if (form.status === 'closed') {
+          listDiv = pastListDiv;
+        }
+        if (!listDiv) return;
+        const formItem = document.createElement('div');
+        formItem.className = 'collapsible-section';
+        // Title button
+        const formBtn = document.createElement('button');
+        formBtn.className = 'toggle';
+        formBtn.textContent = form.title + (form.status === 'draft' ? ' (Draft)' : (form.status === 'active' ? ' (Active)' : ' (Closed)'));
+        formItem.appendChild(formBtn);
+        // Detail container
+        const detailDiv = document.createElement('div');
+        detailDiv.className = 'collapsible-content';
+        // If draft form: show Edit and Publish options
+        if (form.status === 'draft') {
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit Draft';
+          editBtn.addEventListener('click', () => {
+            // load form into builder for editing
+            currentForm = form;
+            document.getElementById('form-title').value = form.title;
+            document.getElementById('form-color').value = form.color || '#2196F3';
+            document.getElementById('form-expiration').value = form.expiration || '';
+            renderQuestionsList();
+            // open the create form section if closed
+            const createSectionBtn = document.querySelector('#admin-interface .collapsible-section .toggle');
+            if (!createSectionBtn.classList.contains('active')) {
+              createSectionBtn.click();
+            }
+            document.getElementById('form-builder-msg').textContent = 'Editing draft: ' + form.title;
+          });
+          detailDiv.appendChild(editBtn);
+          const pubBtn = document.createElement('button');
+          pubBtn.textContent = 'Publish Now';
+          pubBtn.addEventListener('click', () => {
+            currentForm = form;
+            document.getElementById('form-title').value = form.title;
+            document.getElementById('form-color').value = form.color || '#2196F3';
+            document.getElementById('form-expiration').value = form.expiration || '';
+            // directly trigger publish
+            document.getElementById('publish-form-btn').click();
+          });
+          detailDiv.appendChild(pubBtn);
+        }
+        // If active or closed form: show response tracker
+        if (form.status !== 'draft') {
+          const infoP = document.createElement('p');
+          infoP.innerHTML = '<strong>Expiration:</strong> ' + (form.expiration || 'None') + 
+                            '<br/><strong>Status:</strong> ' + (form.status === 'active' ? 'Active' : 'Closed');
+          detailDiv.appendChild(infoP);
+          // Student tracker table or list
+          const trackerDiv = document.createElement('div');
+          trackerDiv.innerHTML = '<h4>Responses:</h4>';
+          // Listing all students
+          students.forEach(student => {
+            const studentItem = document.createElement('div');
+            studentItem.className = 'collapsible-section';
+            const studentBtn = document.createElement('button');
+            studentBtn.className = 'toggle';
+            const hasSubmitted = responses[form.id] && responses[form.id][student];
+            studentBtn.innerHTML = student + ' <span class="status-icon ' + (hasSubmitted ? 'ok">✓' : 'missing">✗') + '</span>';
+            studentItem.appendChild(studentBtn);
+            const studentContent = document.createElement('div');
+            studentContent.className = 'collapsible-content';
+            if (hasSubmitted) {
+              const resp = responses[form.id][student];
+              // Show each answer
+              resp.answers.forEach((ans, qIndex) => {
+                const qText = form.questions[qIndex].text;
+                const ansDiv = document.createElement('div');
+                ansDiv.innerHTML = '<strong>' + escapeHtml(qText) + ':</strong> ' + escapeHtml(ans);
+                studentContent.appendChild(ansDiv);
+              });
+              const emailDiv = document.createElement('div');
+              emailDiv.innerHTML = '<strong>Email:</strong> ' + escapeHtml(responses[form.id][student].email || '');
+              studentContent.appendChild(emailDiv);
+            } else {
+              const noDiv = document.createElement('div');
+              noDiv.innerHTML = '<em>No submission.</em> ';
+              // Reminder button
+              const remindBtn = document.createElement('button');
+              remindBtn.textContent = 'Send Reminder';
+              remindBtn.addEventListener('click', () => {
+                sendReminder(student, form);
+              });
+              noDiv.appendChild(remindBtn);
+              studentContent.appendChild(noDiv);
+            }
+            studentItem.appendChild(studentContent);
+            trackerDiv.appendChild(studentItem);
+          });
+          // AI Summary and PDF actions
+          const actionsDiv = document.createElement('div');
+          const summaryBtn = document.createElement('button');
+          summaryBtn.textContent = 'Generate AI Summary';
+          const summaryP = document.createElement('p');
+          summaryP.id = 'summary-' + form.id;
+          summaryBtn.addEventListener('click', () => {
+            summaryP.textContent = 'Analyzing responses...';
+            generateSummary(form.id);
+          });
+          actionsDiv.appendChild(summaryBtn);
+          const exportBtn = document.createElement('button');
+          exportBtn.textContent = 'Export PDF';
+          exportBtn.addEventListener('click', () => {
+            exportPDF(form.id);
+          });
+          actionsDiv.appendChild(exportBtn);
+          detailDiv.appendChild(trackerDiv);
+          detailDiv.appendChild(summaryP);
+          detailDiv.appendChild(actionsDiv);
+        }
+        formItem.appendChild(detailDiv);
+        listDiv.appendChild(formItem);
+      });
+      // Attach toggling logic to new dynamic collapsible toggles we created
+      document.querySelectorAll('#draft-forms-list .toggle, #active-forms-list .toggle, #past-forms-list .toggle').forEach(btn => {
+        btn.onclick = function() {
+          const content = this.nextElementSibling;
+          if (!content) return;
+          this.classList.toggle('active');
+          content.classList.toggle('active');
+        };
+      });
+    }
+       // Load student view of active forms
+    function loadStudentFormsList() {
+      const listDiv = document.getElementById('student-forms-list');
+      listDiv.innerHTML = '';
+      const now = new Date();
+      const activeForms = forms.filter(f => f.status === 'active' && (!f.expiration || new Date(f.expiration) >= now));
+      if (activeForms.length === 0) {
+        listDiv.innerHTML = '<p>No active forms at this time.</p>';
+        return;
+      }
+      activeForms.forEach(form => {
+        const formBtn = document.createElement('button');
+        formBtn.textContent = form.title;
+        formBtn.addEventListener('click', () => {
+          openStudentForm(form.id);
+        });
+        listDiv.appendChild(formBtn);
+      });
+      // if URL has a form param, auto-open that form if it is active
+      const urlParams = new URLSearchParams(window.location.search);
+      const formParam = urlParams.get('form');
+      if (formParam) {
+        const targetForm = activeForms.find(f => f.id === formParam);
+        if (targetForm) {
+          openStudentForm(targetForm.id);
+        }
+      }
+    }
+    // Open a student form for taking
+    function openStudentForm(formId) {
+      const form = forms.find(f => f.id === formId);
+      if (!form) return;
+      // If already submitted by this student
+      if (responses[formId] && responses[formId][currentStudentName]) {
+        document.getElementById('student-form-container').classList.remove('hidden');
+        document.getElementById('student-form-title').textContent = form.title;
+        document.getElementById('student-form-content').innerHTML = '<p>You have already submitted this form.</p>';
+        document.getElementById('submit-form-btn').style.display = 'none';
+        return;
+      } else {
+        document.getElementById('submit-form-btn').style.display = 'inline-block';
+      }
+      currentStudentFormId = formId;
+      document.getElementById('student-form-container').classList.remove('hidden');
+      document.getElementById('student-form-title').textContent = form.title;
+      const formContentDiv = document.getElementById('student-form-content');
+      formContentDiv.innerHTML = '';
+      // Always include Name (read-only or hidden) and Email field
+      const nameP = document.createElement('p');
+      nameP.innerHTML = '<strong>Name:</strong> ' + escapeHtml(currentStudentName);
+      formContentDiv.appendChild(nameP);
+      const emailP = document.createElement('p');
+      emailP.innerHTML = '<label><strong>Email:</strong> <input type="email" id="student-email-input" required /></label>';
+      formContentDiv.appendChild(emailP);
+      // If form has any conditional question, add a period selection field at top of form (for student to pick their period)
+      let hasConditional = form.questions.some(q => q.type === 'conditional');
+      let selectedPeriod = null;
+      if (hasConditional) {
+        const periodDiv = document.createElement('p');
+        let periodOptions = '';
+        for (let p = 1; p <= 8; p++) { periodOptions += '<option value="'+p+'">'+p+'</option>'; }
+        periodDiv.innerHTML = '<label><strong>Class Period:</strong> <select id="student-period-select"><option value="">--Select Period--</option>' + periodOptions + '</select></label>';
+        formContentDiv.appendChild(periodDiv);
+        const periodSelect = document.getElementById('student-period-select');
+        periodSelect.addEventListener('change', () => {
+          selectedPeriod = periodSelect.value ? parseInt(periodSelect.value) : null;
+          // show/hide conditional questions
+          document.querySelectorAll('.conditional-question').forEach(elem => {
+            const allowed = elem.getAttribute('data-periods');
+            if (!allowed || allowed === '') {
+              elem.style.display = 'none';
+            } else {
+              const allowedPeriods = allowed.split(',').map(x => parseInt(x));
+              if (!selectedPeriod || allowedPeriods.indexOf(selectedPeriod) === -1) {
+                elem.style.display = 'none';
+              } else {
+                elem.style.display = 'block';
+              }
+            }
+          });
+        });
+      }
+      // For each question, generate input field
+      form.questions.forEach((q, idx) => {
+        let qDiv = document.createElement('div');
+        // If conditional question, mark and hide initially
+        if (q.type === 'conditional') {
+          qDiv.className = 'conditional-question';
+          qDiv.setAttribute('data-periods', (q.periods ? q.periods.join(',') : ''));
+          qDiv.style.display = 'none'; // hide by default until period chosen
+        }
+        let qLabel = document.createElement('label');
+        qLabel.innerHTML = '<strong>' + escapeHtml(q.text) + ':</strong> ';
+        if (q.type === 'short') {
+          qLabel.innerHTML += '<input type="text" id="q' + idx + '" />';
+        } else if (q.type === 'paragraph') {
+          qLabel.innerHTML += '<textarea id="q' + idx + '" rows="3" cols="40"></textarea>';
+        } else if (q.type === 'multiple') {
+          // multiple choice: list options as radio
+          q.options = q.options || [];
+          q.options.forEach((opt, optIndex) => {
+            const optId = 'q' + idx + 'opt' + optIndex;
+            qLabel.innerHTML += '<br/><input type="radio" name="q' + idx + '" id="' + optId + '" value="' + escapeHtml(opt) + '" /> <label for="' + optId + '">' + escapeHtml(opt) + '</label>';
+          });
+        } else if (q.type === 'star') {
+          // star rating
+          const fieldName = 'q' + idx;
+          let starsHtml = '<div class="star-rating">';
+          for (let s = 5; s >= 1; s--) {
+            const starId = fieldName + 'star' + s;
+            starsHtml += '<input type="radio" name="' + fieldName + '" id="' + starId + '" value="' + s + '"><label for="' + starId + '">★</label>';
+          }
+          starsHtml += '</div>';
+          qLabel.innerHTML += starsHtml;
+        } else if (q.type === 'conditional') {
+          // treat as short answer input (conditional logic handled by showing/hiding)
+          qLabel.innerHTML += '<input type="text" id="q' + idx + '" />';
+        }
+        qDiv.appendChild(qLabel);
+        formContentDiv.appendChild(qDiv);
+      });
+    }
+    // Student submission
+    document.getElementById('submit-form-btn').addEventListener('click', () => {
+      if (!currentStudentFormId || !currentStudentName) return;
+      const form = forms.find(f => f.id === currentStudentFormId);
+      if (!form) return;
+      const emailInput = document.getElementById('student-email-input');
+      if (!emailInput || !emailInput.value.trim()) {
+        alert('Please enter your email.');
+        return;
+      }
+      const answers = [];
+      for (let i = 0; i < form.questions.length; i++) {
+        const q = form.questions[i];
+        let ans = "";
+        if (q.type === 'short' || q.type === 'conditional') {
+          const inp = document.getElementById('q' + i);
+          ans = inp ? inp.value.trim() : "";
+        } else if (q.type === 'paragraph') {
+          const inp = document.getElementById('q' + i);
+          ans = inp ? inp.value.trim() : "";
+        } else if (q.type === 'multiple') {
+          const opts = document.getElementsByName('q' + i);
+          opts.forEach(opt => {
+            if (opt.checked) ans = opt.value;
+          });
+        } else if (q.type === 'star') {
+          const opts = document.getElementsByName('q' + i);
+          opts.forEach(opt => {
+            if (opt.checked) ans = opt.value;
+          });
+        }
+        answers.push(ans);
+      }
+      if (!responses[currentStudentFormId]) responses[currentStudentFormId] = {};
+      responses[currentStudentFormId][currentStudentName] = { email: emailInput.value.trim(), answers: answers };
+      localStorage.setItem('responses', JSON.stringify(responses));
+      document.getElementById('student-form-msg').textContent = 'Response submitted. Thank you!';
+      document.getElementById('submit-form-btn').disabled = true;
+      // Refresh admin view if admin is open? That would require pushing data to admin UI, not necessary until they refresh page or reopen responses.
+    });
+       // Admin: generate AI summary of responses for a form
+    function generateSummary(formId) {
+      const form = forms.find(f => f.id === formId);
+      if (!form) return;
+      // Collect all answers for each question
+      let summaryPrompt = "Summarize the following responses:\n";
+      if (responses[formId]) {
+        for (const [student, resp] of Object.entries(responses[formId])) {
+          summaryPrompt += student + ":\n";
+          resp.answers.forEach((ans, idx) => {
+            summaryPrompt += form.questions[idx].text + " - " + ans + "\n";
+          });
+        }
+      } else {
+        summaryPrompt += "No responses.";
+      }
+      // Placeholder API call to OpenAI (not actually calling without valid key)
+      fetch('https://api.openai.com/v1/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + OPENAI_API_KEY
+        },
+        body: JSON.stringify({
+          model: 'text-davinci-003',
+          prompt: summaryPrompt,
+          max_tokens: 150
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const summaryText = data.choices && data.choices[0] ? data.choices[0].text.trim() : 'No summary available.';
+        // Display summary
+        const summaryP = document.getElementById('summary-' + formId);
+        if (summaryP) summaryP.textContent = 'Summary: ' + summaryText;
+      })
+      .catch(err => {
+        console.error('AI summary failed', err);
+        const summaryP = document.getElementById('summary-' + formId);
+        if (summaryP) summaryP.textContent = 'Summary generation failed or not available.';
+      });
+    }
+    // Admin: send reminder via Twilio (placeholder)
+    function sendReminder(studentName, form) {
+      const number = studentContacts[studentName];
+      if (!number) {
+        alert('No contact info for ' + studentName);
+        return;
+      }
+      const message = 'Reminder: Please complete the form "' + form.title + '".';
+      // Twilio API call (placeholder - will not work without valid credentials)
+      fetch('https://api.twilio.com/2010-04-01/Accounts/' + TWILIO_SID + '/Messages.json', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(TWILIO_SID + ':' + TWILIO_AUTH_TOKEN),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'From=' + encodeURIComponent(TWILIO_FROM) + '&To=' + encodeURIComponent(number) + '&Body=' + encodeURIComponent(message)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('Reminder sent to ' + studentName);
+        } else {
+          alert('Failed to send reminder. Check Twilio credentials.');
+        }
+      })
+      .catch(err => {
+        console.error('Twilio API call failed:', err);
+        alert('Error sending reminder.');
+      });
+    }
+    // Admin: Export responses and summary as PDF
+    function exportPDF(formId) {
+      const form = forms.find(f => f.id === formId);
+      if (!form) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let lines = [];
+      lines.push("Form: " + form.title);
+      lines.push("Expiration: " + (form.expiration || 'None'));
+      lines.push("Status: " + (form.status === 'active' ? 'Active' : 'Closed'));
+      lines.push(" "); // blank line
+      // AI summary if available (if we had generated and stored, but we didn't store it)
+      // For now, just indicate summary would appear here
+      lines.push("Summary: (Placeholder summary)");
+      lines.push(" "); 
+      lines.push("Responses:");
+      if (responses[formId]) {
+        for (const [student, resp] of Object.entries(responses[formId])) {
+          lines.push(student + " (" + (resp.email || 'no email') + "):");
+          resp.answers.forEach((ans, idx) => {
+            lines.push(" - " + form.questions[idx].text + ": " + ans);
+          });
+          lines.push(" ");
+        }
+      } else {
+        lines.push("No responses.");
+      }
+      doc.setFontSize(12);
+      // Add lines to PDF
+      doc.text(lines, 10, 10);
+      doc.save(form.title.replace(/\s+/g, '_') + "_responses.pdf");
+    }
+    // Admin: Password change
+    document.getElementById('change-pass-btn').addEventListener('click', () => {
+      const current = document.getElementById('current-pass').value;
+      const newp = document.getElementById('new-pass').value;
+      const confirm = document.getElementById('confirm-pass').value;
+      const msg = document.getElementById('pass-change-msg');
+      if (current !== adminPassword) {
+        msg.style.color = 'red';
+        msg.textContent = 'Current password is incorrect.';
+        return;
+      }
+      if (!newp) {
+        msg.style.color = 'red';
+        msg.textContent = 'New password cannot be empty.';
+        return;
+      }
+      if (newp !== confirm) {
+        msg.style.color = 'red';
+        msg.textContent = 'New passwords do not match.';
+        return;
+      }
+      adminPassword = newp;
+      localStorage.setItem('adminPass', adminPassword);
+      msg.style.color = 'green';
+      msg.textContent = 'Password changed successfully.';
+      // Clear input fields
+      document.getElementById('current-pass').value = '';
+      document.getElementById('new-pass').value = '';
+      document.getElementById('confirm-pass').value = '';
+    });
+    // Initial load: if forms exist in storage, load them into lists for admin
+    if (forms.length > 0) {
+      loadFormsLists();
+    }
+    // If page loaded with a form link and user not logged in yet, encourage student login
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('form')) {
+      // auto-show student login if a form param is present
+      studentLoginForm.classList.remove('hidden');
+      adminLoginForm.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
